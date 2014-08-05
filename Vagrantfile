@@ -1,7 +1,15 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+#Network Settings
+IP_ADDRESS = '172.22.22.22'
+PROJECT_NAME = 'project-name'
+#Passwords
+DATABASE_PASSWORD = 'password'
+
+
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -21,15 +29,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # config.vm.network "forwarded_port", guest: 80, host: 8080
-
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
 
   # If true, then any SSH connections made will enable agent forwarding.
   # Default value: false
@@ -56,37 +55,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # View the documentation for the provider you're using for more
   # information on available options.
 
-  # Enable provisioning with CFEngine. CFEngine Community packages are
-  # automatically installed. For example, configure the host as a
-  # policy server and optionally a policy file to run:
-  #
-  # config.vm.provision "cfengine" do |cf|
-  #   cf.am_policy_hub = true
-  #   # cf.run_file = "motd.cf"
-  # end
-  #
-  # You can also configure and bootstrap a client to an existing
-  # policy server:
-  #
-  # config.vm.provision "cfengine" do |cf|
-  #   cf.policy_server_address = "10.0.2.15"
-  # end
-
-  # Enable provisioning with Puppet stand alone.  Puppet manifests
-  # are contained in a directory path relative to this Vagrantfile.
-  # You will need to create the manifests directory and a manifest in
-  # the file default.pp in the manifests_path directory.
-  #
-  # config.vm.provision "puppet" do |puppet|
-  #   puppet.manifests_path = "manifests"
-  #   puppet.manifest_file  = "site.pp"
-  # end
+  # Use hostonly network with a static IP Address and enable
+  # hostmanager so we can have a custom domain for the server
+  # by modifying the host machines hosts file
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.vm.define PROJECT_NAME do |node|
+    node.vm.hostname = "#{PROJECT_NAME}.local"
+    node.vm.network :private_network, ip: IP_ADDRESS
+    node.hostmanager.aliases = [ "www.#{node.vm.hostname}"]
+  end
+  config.vm.provision :hostmanager
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
   #
-  # config.vm.provision "chef_solo" do |chef|
+  #config.vm.provision "chef_solo" do |chef|
   #   chef.cookbooks_path = "../my-recipes/cookbooks"
   #   chef.roles_path = "../my-recipes/roles"
   #   chef.data_bags_path = "../my-recipes/data_bags"
